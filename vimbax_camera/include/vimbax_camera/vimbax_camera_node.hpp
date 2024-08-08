@@ -77,6 +77,7 @@
 #include <vimbax_camera/vimbax_camera.hpp>
 
 #include <std_msgs/msg/empty.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 
 #include <vimbax_camera_events/event_publisher.hpp>
 
@@ -121,6 +122,7 @@ private:
   bool initialize_parameters();
   bool initialize_api();
   bool initialize_publisher();
+  bool initialize_intensity_publisher();
   bool initialize_camera(bool reconnect = false);
   bool initialize_camera_observer();
   bool initialize_graph_notify();
@@ -150,6 +152,7 @@ private:
 
   // Publishers
   image_transport::CameraPublisher camera_publisher_;
+  rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr intensity_publisher_;
 
   // Services
   rclcpp::Service<vimbax_camera_msgs::srv::FeaturesListGet>::SharedPtr

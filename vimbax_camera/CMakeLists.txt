@@ -24,6 +24,8 @@ find_package(camera_info_manager REQUIRED)
 find_package(vimbax_camera_msgs REQUIRED)
 find_package(vimbax_camera_events REQUIRED)
 find_package(vmbc_interface REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${vimbax_camera_node_SRCS})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -39,6 +41,7 @@ ament_target_dependencies(
         "vimbax_camera_msgs"
         "vimbax_camera_events"
         "vmbc_interface"
+        "cv_bridge"
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}

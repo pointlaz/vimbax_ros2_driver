@@ -1736,6 +1736,25 @@ void VimbaXCamera::Frame::on_frame_ready()
 
 
   transform();
+    
+  //Pixel Intensity
+  
+
+  //Add Compression 
+
+  //Bayer -> RBG -> JPEG
+
+  //Bayer -> as is
+
+  //Bayer -> Jetraw
+
+  //Debug
+
+  // Jetraw -> Raw
+
+  // JPEG ->  Raw
+
+  // Bayer -> Raw
 
   if (callback_) {
     callback_(shared_from_this());

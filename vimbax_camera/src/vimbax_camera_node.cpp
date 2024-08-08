@@ -106,6 +106,10 @@ bool VimbaXCameraNode::initialize(const rclcpp::NodeOptions & options)
     return false;
   }
 
+  if (!initialize_intensity_publisher()) {
+    return false;
+  }
+
   if (!initialize_feature_services()) {
     return false;
   }
@@ -360,6 +364,20 @@ bool VimbaXCameraNode::initialize_publisher()
     return false;
   }
 
+  return true;
+}
+
+
+bool VimbaXCameraNode::initialize_intensity_publisher()
+{
+  RCLCPP_INFO(get_logger(), "Initializing intensity publisher ...");
+
+  rclcpp::QoS qos(10);
+  intensity_publisher_ =  node_->create_publisher<std_msgs::msg::UInt8>("pixel_intensity",qos);
+
+  if (!intensity_publisher_) {
+    return false;
+  }
   return true;
 }
 
@@ -1627,8 +1645,14 @@ result<void> VimbaXCameraNode::start_streaming()
         return loaded_info;
       }().set__header(frame->header);
 
+      // Set Camera Info
+
 
       camera_publisher_.publish(*frame, camera_info);
+
+      auto message = std_msgs::msg::UInt8();
+      message.data = 1;
+      intensity_publisher_->publish(message);
 
       auto const queue_error = frame->queue();
       if (queue_error != VmbErrorSuccess) {

@@ -76,6 +76,8 @@ public:
 
     uint64_t get_timestamp_ns() const;
 
+    uint8_t get_pixel_intensity() const;
+
     void on_frame_ready();
     /* *INDENT-OFF* */
   private:
@@ -96,6 +98,7 @@ public:
     std::function<void(std::shared_ptr<Frame>)> callback_;
     std::weak_ptr<VimbaXCamera> camera_;
     VmbFrame vmb_frame_;
+    u_int8_t pixel_intensity_ = 8;
 
     AllocationMode allocation_mode_;
   };

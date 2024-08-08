@@ -1736,6 +1736,7 @@ void VimbaXCamera::Frame::on_frame_ready()
 
 
   transform();
+  pixel_intensity_ = 255;
     
   //Pixel Intensity
   
@@ -1920,5 +1921,11 @@ uint64_t VimbaXCamera::Frame::get_timestamp_ns() const
 {
   return timestamp_to_ns(vmb_frame_.timestamp);
 }
+
+uint8_t VimbaXCamera::Frame::get_pixel_intensity() const
+{
+  return pixel_intensity_;
+}
+
 
 }  // namespace vimbax_camera

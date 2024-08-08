@@ -1651,7 +1651,7 @@ result<void> VimbaXCameraNode::start_streaming()
       camera_publisher_.publish(*frame, camera_info);
 
       auto message = std_msgs::msg::UInt8();
-      message.data = 1;
+      message.data = frame->get_pixel_intensity();
       intensity_publisher_->publish(message);
 
       auto const queue_error = frame->queue();

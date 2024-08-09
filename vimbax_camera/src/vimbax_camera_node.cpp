@@ -330,7 +330,7 @@ bool VimbaXCameraNode::initialize_parameters()
 
    auto const parameter_intensity_pixel_echo_desc = rcl_interfaces::msg::ParameterDescriptor{}
   .set__description("Pixel Intensity Use Echo mode");
-  node_->declare_parameter(parameter_pixel_intensity_echo, false, parameter_intensity_pixel_echo_desc);
+  node_->declare_parameter(parameter_pixel_intensity_echo, true, parameter_intensity_pixel_echo_desc);
 
 
   parameter_callback_handle_ = node_->add_on_set_parameters_callback(

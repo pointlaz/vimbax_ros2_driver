@@ -325,16 +325,8 @@ bool VimbaXCameraNode::initialize_parameters()
   node_->declare_parameter(parameter_pixel_intensity_saturation_threshold, 0.8, parameter_intensity_pixel_saturation_threshold_desc);
 
   auto const parameter_intensity_pixel_count_saturated_pixels_desc = rcl_interfaces::msg::ParameterDescriptor{}
-  .set__description("Pixel Intensity Use Pixel Cound");
+  .set__description("Pixel Intensity Use Pixel Count");
   node_->declare_parameter(parameter_pixel_intensity_count_saturated_pixels, true, parameter_intensity_pixel_count_saturated_pixels_desc);
-
-  auto const parameter_intensity_pixel_use_moving_average_desc = rcl_interfaces::msg::ParameterDescriptor{}
-  .set__description("Pixel Intensity Use Moving Average");
-  node_->declare_parameter(parameter_pixel_intensity_use_moving_average, true, parameter_intensity_pixel_use_moving_average_desc);
-
-  auto const parameter_intensity_pixel_moving_average_k_desc = rcl_interfaces::msg::ParameterDescriptor{}
-  .set__description("Pixel Intensity Moving Average K");
-  node_->declare_parameter(parameter_pixel_intensity_moving_average_k, 10, parameter_intensity_pixel_moving_average_k_desc);
 
    auto const parameter_intensity_pixel_echo_desc = rcl_interfaces::msg::ParameterDescriptor{}
   .set__description("Pixel Intensity Use Echo mode");
@@ -414,10 +406,6 @@ bool VimbaXCameraNode::initialize_intensity_publisher()
   
   bool count_saturated_pixels_in_mean = node_->get_parameter(parameter_pixel_intensity_count_saturated_pixels).as_bool();
   
-  bool use_moving_average = node_->get_parameter(parameter_pixel_intensity_use_moving_average).as_bool();
-  
-  int moving_average_k = node_->get_parameter(parameter_pixel_intensity_moving_average_k).as_int();
-  
   bool echo = node_->get_parameter(parameter_pixel_intensity_echo).as_bool();
 
   if (use_intensity)
@@ -430,8 +418,8 @@ bool VimbaXCameraNode::initialize_intensity_publisher()
       return false;
     }
 
-    std::shared_ptr<vimbax_camera::PixelIntensity> pixelIntensity = std::make_shared<vimbax_camera::PixelIntensity>(camera_->get_frame_ready_queue_mutex(),pixel_steps,saturation_value,saturated_threshold,
-    count_saturated_pixels_in_mean,use_moving_average,moving_average_k,echo);
+    std::shared_ptr<vimbax_camera::PixelIntensity> pixelIntensity = std::make_shared<vimbax_camera::PixelIntensity>(pixel_steps,saturation_value,saturated_threshold,
+    count_saturated_pixels_in_mean,echo);
     camera_->set_pixel_intensity_obj(pixelIntensity);
 
     return true;

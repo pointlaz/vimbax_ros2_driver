@@ -112,8 +112,6 @@ private:
   const std::string parameter_pixel_intensity_saturation_value = "pixel_intensity_saturation_value";
   const std::string parameter_pixel_intensity_saturation_threshold = "pixel_intensity_saturation_threshold";
   const std::string parameter_pixel_intensity_count_saturated_pixels = "pixel_intensity_count_saturated_pixels";
-  const std::string parameter_pixel_intensity_use_moving_average = "pixel_intensity_use_moving_average";
-  const std::string parameter_pixel_intensity_moving_average_k = "pixel_intensity_moving_average_k";
   const std::string parameter_pixel_intensity_echo = "pixel_intensity_echo";
 
 

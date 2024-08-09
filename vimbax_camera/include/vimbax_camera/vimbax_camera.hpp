@@ -58,19 +58,13 @@ private:
   float saturated_threshold_;
   uint8_t saturation_value_;
   bool count_saturated_pixels_in_mean_;
-  bool use_moving_average_;
-  int moving_average_k_;
-  std::vector<uint8_t> values_for_moving_average_;
   bool echo_;
-  std::mutex &lock_;
   
 public:
 
-  PixelIntensity(std::mutex &mutex,int steps = 10, uint8_t saturation_value = 250 ,float saturated_threshold = 0.8, 
-                bool count_saturated_pixels = true, bool use_moving_average = true,
-                 int moving_average_k = 10 , bool echo = false):lock_(mutex),pixel_steps_(steps), saturation_value_(saturation_value),
-                 saturated_threshold_(saturated_threshold),count_saturated_pixels_in_mean_(count_saturated_pixels),
-                 use_moving_average_(use_moving_average),  moving_average_k_(moving_average_k), echo_(echo){};
+  PixelIntensity(int steps = 10, uint8_t saturation_value = 250 ,float saturated_threshold = 0.8, 
+                bool count_saturated_pixels = true, bool echo = false):pixel_steps_(steps), saturation_value_(saturation_value),
+                 saturated_threshold_(saturated_threshold),count_saturated_pixels_in_mean_(count_saturated_pixels), echo_(echo){};
 
   uint8_t get_intensity(uint8_t *data, int size);
 
@@ -107,6 +101,8 @@ public:
     uint64_t get_timestamp_ns() const;
 
     uint8_t get_pixel_intensity() const;
+
+    void set_pixel_intensity_obj(std::shared_ptr<PixelIntensity> ptr) {pixel_intensity_obj_=ptr;}
 
     void on_frame_ready();
     /* *INDENT-OFF* */

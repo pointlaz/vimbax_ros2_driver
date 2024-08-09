@@ -452,6 +452,7 @@ result<void> VimbaXCamera::start_streaming(
 
       frame = *new_frame;
       // Set Pixel Intensity Information
+      if (pixel_intensity_obj_) frame->set_pixel_intensity_obj(pixel_intensity_obj_);
 
       frame->set_callback(on_frame);
     }
@@ -1984,36 +1985,7 @@ uint8_t PixelIntensity::get_intensity(uint8_t *data, int size)
       }
   }
 
-
-  // Moving Average
-  if(use_moving_average_)
-  {
-      // Manage vector of intensities
-      std::unique_lock lock{lock_};
-      if(values_for_moving_average_.size() < moving_average_k_)
-      {
-          values_for_moving_average_.emplace_back(pixel_intensity_measured);
-      }
-      else
-      {
-          values_for_moving_average_.erase(values_for_moving_average_.begin());
-          values_for_moving_average_.emplace_back(pixel_intensity_measured);
-      }
-
-      // Mean
-      int sum_pixel_intensities = 0;
-      for(int i = 0 ; i < values_for_moving_average_.size() ; i++)
-      {
-          sum_pixel_intensities += values_for_moving_average_[i];
-      }
-      current_intensity = (uint8_t)(sum_pixel_intensities / values_for_moving_average_.size());
-      lock.unlock();
-      
-  }
-  else
-  {
-      current_intensity= pixel_intensity_measured;
-  }
+  current_intensity= pixel_intensity_measured;
 
   // Echos
   auto end = std::chrono::high_resolution_clock::now();     

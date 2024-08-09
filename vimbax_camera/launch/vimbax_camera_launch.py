@@ -25,24 +25,50 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+import os
 
+import yaml
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
 def generate_launch_description():
-    return LaunchDescription([
-        Node(
+
+    vimbax_camera_ld = LaunchDescription()
+
+    share_directory_path = get_package_share_directory("vimbax_camera")
+    config_path = os.path.join(
+        share_directory_path,
+        'config',
+        'params.yaml'
+    )
+    camera_ids_config_path = os.path.join(
+        share_directory_path,
+        'config',
+        'camera_ids.yaml'
+    )
+
+    camera_ids_config = yaml.safe_load(open(camera_ids_config_path, "r"))
+    camera_ids_config["id_0"]
+
+    vimbax_camera_node = Node(
             package='vimbax_camera',
-            namespace='vimbax_camera_test',
+            namespace='',
             executable='vimbax_camera_node',
-            name='vimbax_camera_test',
-            parameters=[{
-                # "camera_id": "00:0f:31:00:0e:2f"
-                # "camera_id": "00:0F-31-00-0E-2F"
-                # "camera_id": "169.254.103.205"
-                # "camera_id": "DEV_000F31000E2F"
-            }]
-        )
-    ])
+            name='vimbax_camera_node_1',
+            parameters=[
+               config_path,
+               {"camera_id": 1},
+            ]
+    )
+
+    vimbax_camera_ld.add_action(vimbax_camera_node)
+
+    return vimbax_camera_ld

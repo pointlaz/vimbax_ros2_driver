@@ -1,4 +1,9 @@
 /**:
   ros__parameters:
-    pixel_intensity_echo: false
+    use_pixel_intensity: true #(bool) If true, the pixel intensity will be calculated for every camera and published in topics
+    pixel_intensity_steps: 10 #(int) A pixel will be taken every 'pixel_intensity_pixel_steps' to do the pixel intensity calculation.
+    pixel_intensity_saturation_value: 255 #(int) ; [0 ; 255]) The value for which a pixel is considered saturated. 
+    pixel_intensity_saturation_threshold: -1.0 #(float)  [0.0 ; 1.0] ; -1.0 to not use it) The ratio of saturated pixels for which the image is considered saturated.
+    pixel_intensity_count_saturated_pixels: true #(bool) If true, the saturated pixels will be taken into account in the mean pixel intensity calculation
+    pixel_intensity_echo: false #(bool) If true, results of the calculation and computation time will be echo in terminal.
 

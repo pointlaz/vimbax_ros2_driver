@@ -328,9 +328,25 @@ bool VimbaXCameraNode::initialize_parameters()
   .set__description("Pixel Intensity Use Pixel Count");
   node_->declare_parameter(parameter_pixel_intensity_count_saturated_pixels, true, parameter_intensity_pixel_count_saturated_pixels_desc);
 
-   auto const parameter_intensity_pixel_echo_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  auto const parameter_intensity_pixel_echo_desc = rcl_interfaces::msg::ParameterDescriptor{}
   .set__description("Pixel Intensity Use Echo mode");
   node_->declare_parameter(parameter_pixel_intensity_echo, true, parameter_intensity_pixel_echo_desc);
+
+  auto const parameter_compression_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Compression mode : JPEG,RGB,None");
+  node_->declare_parameter(parameter_compression, "JPEG", parameter_compression_desc);
+
+  auto const parameter_compression_debug_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Use the debug mode.Slows down");
+  node_->declare_parameter(parameter_compression_debug, false, parameter_compression_debug_desc);
+
+  auto const parameter_compression_echo_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Echo Compression Information");
+  node_->declare_parameter(parameter_compression_echo, false, parameter_compression_echo_desc);
+
+  auto const parameter_compression_jpeg_quality_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Compression Information");
+  node_->declare_parameter(parameter_compression_jpeg_quality, false, parameter_compression_jpeg_quality_desc);
 
 
   parameter_callback_handle_ = node_->add_on_set_parameters_callback(
@@ -383,6 +399,14 @@ bool VimbaXCameraNode::initialize_publisher()
   auto qos = rmw_qos_profile_default;
   qos.depth = 10;
 
+  camera_->compression_ = node_->get_parameter(parameter_compression).as_string();
+
+  camera_->compression_debug_ = node_->get_parameter(parameter_compression_debug).as_bool();
+
+  camera_->compression_echo_ = node_->get_parameter(parameter_compression_debug).as_bool();
+
+  camera_->compression_jpeg_quality_ = node_->get_parameter(parameter_compression_jpeg_quality).as_int();
+  
   camera_publisher_ = image_transport::create_camera_publisher(node_.get(), "image_raw", qos);
 
   if (!camera_publisher_) {

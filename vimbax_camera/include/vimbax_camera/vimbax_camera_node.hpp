@@ -113,6 +113,10 @@ private:
   const std::string parameter_pixel_intensity_saturation_threshold = "pixel_intensity_saturation_threshold";
   const std::string parameter_pixel_intensity_count_saturated_pixels = "pixel_intensity_count_saturated_pixels";
   const std::string parameter_pixel_intensity_echo = "pixel_intensity_echo";
+  const std::string parameter_compression = "compression";
+  const std::string parameter_compression_debug = "compression_debug";
+  const std::string parameter_compression_echo = "compression_echo";
+  const std::string parameter_compression_jpeg_quality = "compression_jpeg_quality";
 
 
   std::atomic_bool stream_stopped_by_service_ = false;

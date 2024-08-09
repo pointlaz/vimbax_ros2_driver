@@ -107,6 +107,12 @@ public:
     void set_pixel_intensity_obj(std::shared_ptr<PixelIntensity> ptr) {pixel_intensity_obj_=ptr;}
 
     void on_frame_ready();
+
+    std::string compression_="JPEG";
+    bool compression_debug_;
+    int compression_jpeg_quality_;
+    bool compression_echo_;
+
     /* *INDENT-OFF* */
   private:
     /* *INDENT-ON* */
@@ -322,6 +328,11 @@ public:
   std::mutex& get_frame_ready_queue_mutex() const {
         return frame_ready_queue_mutex_;
     }
+
+  std::string compression_="JPEG";
+  bool compression_debug_;
+  int compression_jpeg_quality_;
+  bool compression_echo_;
 
 
 private:

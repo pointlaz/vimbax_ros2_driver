@@ -6,4 +6,7 @@
     pixel_intensity_saturation_threshold: -1.0 #(float)  [0.0 ; 1.0] ; -1.0 to not use it) The ratio of saturated pixels for which the image is considered saturated.
     pixel_intensity_count_saturated_pixels: true #(bool) If true, the saturated pixels will be taken into account in the mean pixel intensity calculation
     pixel_intensity_echo: false #(bool) If true, results of the calculation and computation time will be echo in terminal.
-
+    compression: "JPEG" #(string) Compress in "JPEG", "RGB" or None to leave into camera format. 
+    compression_debug: false #(bool) Convert the image to RGB from the compressed state to make sure it can be decompressed eventually. Slows down processing significantly
+    compression_echo: false #(bool) Gives Compression information (ratio and time)
+    compression_jpeg_quality: 90 # Specify the JPEG Quality ratio, the higher to better but the slower

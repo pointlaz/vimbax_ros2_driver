@@ -1797,15 +1797,8 @@ void VimbaXCamera::Frame::transform()
     pixel_intensity_ = pixel_intensity_obj_->get_intensity(data.data(),data.size());
   }
 
-    //Pixel Intensity
   
-
-  //Add Compression 
-  std::string compression_ = "JPEG";
-  int quality_ = 90;
-  bool debug_ = true;
-  bool echo_compress_ = true;
-
+  // Compression
   auto start = std::chrono::high_resolution_clock::now();
   int dataSizeInit = data.size(); 
   if (compression_ == "JPEG" || compression_ == "RGB")
@@ -1854,7 +1847,7 @@ void VimbaXCamera::Frame::transform()
     else if (compression_ == "JPEG")
     {
         std::vector<uchar> buf;
-        std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, quality_};  
+        std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, compression_jpeg_quality_};  
         if (cv::imencode(".jpg", rgb_image, buf, params)) {
             // Store the compressed data in the msg data field
             this->data = buf;
@@ -1866,7 +1859,7 @@ void VimbaXCamera::Frame::transform()
     }
   }
   auto end = std::chrono::high_resolution_clock::now();     
-  if(echo_compress_)
+  if(compression_echo_)
   {
       std::chrono::duration<double> elapsed = end - start;
       float compress_ratio = (float)dataSizeInit/(float)data.size();
@@ -1877,7 +1870,7 @@ void VimbaXCamera::Frame::transform()
       compress_ratio);
   }
 
-  if (debug_)
+  if (compression_debug_)
   {
       cv_bridge::CvImagePtr cv_ptr;
       cv::Mat rgb_image;
@@ -1945,6 +1938,10 @@ VimbaXCamera::Frame::Frame(std::shared_ptr<VimbaXCamera> camera, AllocationMode 
 {
   vmb_frame_.context[0] = this;
   if (camera->pixel_intensity_obj_) pixel_intensity_obj_ = camera->pixel_intensity_obj_;
+  compression_ = camera->compression_;
+  compression_debug_ = camera->compression_debug_;
+  compression_echo_ = camera->compression_echo_;
+  compression_jpeg_quality_ = camera->compression_jpeg_quality_;
 }
 
 VimbaXCamera::Frame::~Frame()

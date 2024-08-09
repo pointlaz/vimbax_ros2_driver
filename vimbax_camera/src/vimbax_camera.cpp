@@ -1738,8 +1738,7 @@ void VimbaXCamera::Frame::on_frame_ready()
 
 
   transform();
-  pixel_intensity_ = 255;
-    
+  
   //Pixel Intensity
   
 

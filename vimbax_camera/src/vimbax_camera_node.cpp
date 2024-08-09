@@ -310,7 +310,7 @@ bool VimbaXCameraNode::initialize_parameters()
 
   auto const parameter_intensity_pixel_desc = rcl_interfaces::msg::ParameterDescriptor{}
   .set__description("Use Pixel Intensity");
-  node_->declare_parameter(parameter_pixel_intensity, false, parameter_intensity_pixel_desc);
+  node_->declare_parameter(parameter_pixel_intensity, true, parameter_intensity_pixel_desc);
 
   auto const parameter_intensity_pixel_steps_desc = rcl_interfaces::msg::ParameterDescriptor{}
   .set__description("Pixel Intensity Steps Pixels");
@@ -436,6 +436,7 @@ bool VimbaXCameraNode::initialize_intensity_publisher()
 
     return true;
   }
+  return true;
 }
 
 bool VimbaXCameraNode::initialize_camera(bool reconnect /*= false*/)

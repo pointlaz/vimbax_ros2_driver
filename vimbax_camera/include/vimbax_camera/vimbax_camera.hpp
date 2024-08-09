@@ -50,9 +50,39 @@
 
 namespace vimbax_camera
 {
+
+class PixelIntensity
+{
+private:
+  int pixel_steps_;
+  float saturated_threshold_;
+  uint8_t saturation_value_;
+  bool count_saturated_pixels_in_mean_;
+  bool use_moving_average_;
+  int moving_average_k_;
+  std::vector<uint8_t> values_for_moving_average_;
+  bool echo_;
+  std::mutex &lock_;
+  
+public:
+
+  PixelIntensity(std::mutex &mutex,int steps = 10, uint8_t saturation_value = 250 ,float saturated_threshold = 0.8, 
+                bool count_saturated_pixels = true, bool use_moving_average = true,
+                 int moving_average_k = 10 , bool echo = false):lock_(mutex),pixel_steps_(steps), saturation_value_(saturation_value),
+                 saturated_threshold_(saturated_threshold),count_saturated_pixels_in_mean_(count_saturated_pixels),
+                 use_moving_average_(use_moving_average),  moving_average_k_(moving_average_k), echo_(echo){};
+
+  uint8_t get_intensity(uint8_t *data, int size);
+
+
+  ~PixelIntensity(){};
+};
+
+
 class VimbaXCamera : public std::enable_shared_from_this<VimbaXCamera>
 {
 public:
+
   class Frame : public sensor_msgs::msg::Image, public std::enable_shared_from_this<Frame>
   {
     /* *INDENT-OFF* */
@@ -99,6 +129,7 @@ public:
     std::weak_ptr<VimbaXCamera> camera_;
     VmbFrame vmb_frame_;
     u_int8_t pixel_intensity_ = 8;
+    std::shared_ptr<PixelIntensity> pixel_intensity_obj_;
 
     AllocationMode allocation_mode_;
   };
@@ -288,6 +319,13 @@ public:
 
   result<EventMetaDataList> get_event_meta_data(const std::string_view & name);
 
+  void set_pixel_intensity_obj(std::shared_ptr<PixelIntensity> pixelIntensity){pixel_intensity_obj_= pixelIntensity;}
+
+  std::mutex& get_frame_ready_queue_mutex() const {
+        return frame_ready_queue_mutex_;
+    }
+
+
 private:
   explicit VimbaXCamera(std::shared_ptr<VmbCAPI> api, VmbHandle_t camera_handle);
 
@@ -336,7 +374,15 @@ private:
   std::queue<std::shared_ptr<Frame>> frame_ready_queue_;
   std::shared_ptr<std::thread> frame_processing_thread_;
   std::atomic_bool frame_processing_enable_{false};
+  std::shared_ptr<PixelIntensity> pixel_intensity_obj_;
+
+
 };
+
+
+
+
+
 
 }  // namespace vimbax_camera
 

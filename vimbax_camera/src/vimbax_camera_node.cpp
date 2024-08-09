@@ -308,6 +308,39 @@ bool VimbaXCameraNode::initialize_parameters()
   .set__description("Use ROS time instead of camera timestamp in image message header");
   node_->declare_parameter(parameter_use_ros_time, false, use_ros_time_param_desc);
 
+  auto const parameter_intensity_pixel_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Use Pixel Intensity");
+  node_->declare_parameter(parameter_pixel_intensity, false, parameter_intensity_pixel_desc);
+
+  auto const parameter_intensity_pixel_steps_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Steps Pixels");
+  node_->declare_parameter(parameter_pixel_intensity_steps, 10, parameter_intensity_pixel_steps_desc);
+
+  auto const parameter_intensity_pixel_saturation_value_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Saturation Value Uint8");
+  node_->declare_parameter(parameter_pixel_intensity_saturation_value, 250, parameter_intensity_pixel_saturation_value_desc);
+
+  auto const parameter_intensity_pixel_saturation_threshold_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Saturation Threshold");
+  node_->declare_parameter(parameter_pixel_intensity_saturation_threshold, 0.8, parameter_intensity_pixel_saturation_threshold_desc);
+
+  auto const parameter_intensity_pixel_count_saturated_pixels_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Use Pixel Cound");
+  node_->declare_parameter(parameter_pixel_intensity_count_saturated_pixels, true, parameter_intensity_pixel_count_saturated_pixels_desc);
+
+  auto const parameter_intensity_pixel_use_moving_average_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Use Moving Average");
+  node_->declare_parameter(parameter_pixel_intensity_use_moving_average, true, parameter_intensity_pixel_use_moving_average_desc);
+
+  auto const parameter_intensity_pixel_moving_average_k_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Moving Average K");
+  node_->declare_parameter(parameter_pixel_intensity_moving_average_k, 10, parameter_intensity_pixel_moving_average_k_desc);
+
+   auto const parameter_intensity_pixel_echo_desc = rcl_interfaces::msg::ParameterDescriptor{}
+  .set__description("Pixel Intensity Use Echo mode");
+  node_->declare_parameter(parameter_pixel_intensity_echo, false, parameter_intensity_pixel_echo_desc);
+
+
   parameter_callback_handle_ = node_->add_on_set_parameters_callback(
     [this](
       const std::vector<rclcpp::Parameter> & params) -> rcl_interfaces::msg::SetParametersResult {
@@ -370,15 +403,39 @@ bool VimbaXCameraNode::initialize_publisher()
 
 bool VimbaXCameraNode::initialize_intensity_publisher()
 {
-  RCLCPP_INFO(get_logger(), "Initializing intensity publisher ...");
 
-  rclcpp::QoS qos(10);
-  intensity_publisher_ =  node_->create_publisher<std_msgs::msg::UInt8>("pixel_intensity",qos);
+  bool use_intensity = node_->get_parameter(parameter_pixel_intensity).as_bool();
+  
+  int pixel_steps = node_->get_parameter(parameter_pixel_intensity_steps).as_int();
+  
+  uint8_t saturation_value = node_->get_parameter(parameter_pixel_intensity_saturation_value).as_int();
+  
+  float saturated_threshold = node_->get_parameter(parameter_pixel_intensity_saturation_threshold).as_double();
+  
+  bool count_saturated_pixels_in_mean = node_->get_parameter(parameter_pixel_intensity_count_saturated_pixels).as_bool();
+  
+  bool use_moving_average = node_->get_parameter(parameter_pixel_intensity_use_moving_average).as_bool();
+  
+  int moving_average_k = node_->get_parameter(parameter_pixel_intensity_moving_average_k).as_int();
+  
+  bool echo = node_->get_parameter(parameter_pixel_intensity_echo).as_bool();
 
-  if (!intensity_publisher_) {
-    return false;
+  if (use_intensity)
+  {
+    RCLCPP_INFO(get_logger(), "Initializing intensity publisher ...");
+    rclcpp::QoS qos(10);
+    intensity_publisher_ =  node_->create_publisher<std_msgs::msg::UInt8>("pixel_intensity",qos);
+
+    if (!intensity_publisher_) {
+      return false;
+    }
+
+    std::shared_ptr<vimbax_camera::PixelIntensity> pixelIntensity = std::make_shared<vimbax_camera::PixelIntensity>(camera_->get_frame_ready_queue_mutex(),pixel_steps,saturation_value,saturated_threshold,
+    count_saturated_pixels_in_mean,use_moving_average,moving_average_k,echo);
+    camera_->set_pixel_intensity_obj(pixelIntensity);
+
+    return true;
   }
-  return true;
 }
 
 bool VimbaXCameraNode::initialize_camera(bool reconnect /*= false*/)

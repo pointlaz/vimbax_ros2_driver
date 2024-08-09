@@ -107,6 +107,15 @@ private:
   const std::string parameter_camera_info_url = "camera_info_url";
   const std::string parameter_command_feature_timeout = "command_feature_timeout";
   const std::string parameter_use_ros_time = "use_ros_time";
+  const std::string parameter_pixel_intensity = "use_pixel_intensity";
+  const std::string parameter_pixel_intensity_steps = "pixel_intensity_steps";
+  const std::string parameter_pixel_intensity_saturation_value = "pixel_intensity_saturation_value";
+  const std::string parameter_pixel_intensity_saturation_threshold = "pixel_intensity_saturation_threshold";
+  const std::string parameter_pixel_intensity_count_saturated_pixels = "pixel_intensity_count_saturated_pixels";
+  const std::string parameter_pixel_intensity_use_moving_average = "pixel_intensity_use_moving_average";
+  const std::string parameter_pixel_intensity_moving_average_k = "pixel_intensity_moving_average_k";
+  const std::string parameter_pixel_intensity_echo = "pixel_intensity_echo";
+
 
   std::atomic_bool stream_stopped_by_service_ = false;
   std::atomic_bool is_available_ = false;

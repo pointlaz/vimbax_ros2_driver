@@ -451,6 +451,7 @@ result<void> VimbaXCamera::start_streaming(
       }
 
       frame = *new_frame;
+      // Set Pixel Intensity Information
 
       frame->set_callback(on_frame);
     }
@@ -1809,12 +1810,17 @@ void VimbaXCamera::Frame::transform()
       }
       break;
   }
+  if(pixel_intensity_obj_)
+  {
+    pixel_intensity_ = pixel_intensity_obj_->get_intensity(data.data(),data.size());
+  }
 }
 
 VimbaXCamera::Frame::Frame(std::shared_ptr<VimbaXCamera> camera, AllocationMode allocation_mode)
 : camera_{camera}, allocation_mode_{allocation_mode}
 {
   vmb_frame_.context[0] = this;
+  if (camera->pixel_intensity_obj_) pixel_intensity_obj_ = camera->pixel_intensity_obj_;
 }
 
 VimbaXCamera::Frame::~Frame()
@@ -1927,5 +1933,102 @@ uint8_t VimbaXCamera::Frame::get_pixel_intensity() const
   return pixel_intensity_;
 }
 
+uint8_t PixelIntensity::get_intensity(uint8_t *data, int size)
+{
+  auto start = std::chrono::high_resolution_clock::now(); 
+  int nb_pixels = 0;
+  int nb_saturated_pixels = 0;
+  int nb_non_saturated_pixels = 0;
+  int sum_values_to_calculate_mean = 0;
+  uint8_t current_intensity = 0;
 
+  // Parse Image Buffer
+  for(int i = 0 ; i < size ; i += pixel_steps_)
+  {
+      // Saturated Pixel
+      if(data[i] >= saturation_value_)
+      {
+          if(count_saturated_pixels_in_mean_)
+          {
+              sum_values_to_calculate_mean += data[i];
+          }
+          nb_saturated_pixels++;
+      }
+      // Non Saturated Pixel
+      else
+      {
+          sum_values_to_calculate_mean += data[i];
+          nb_non_saturated_pixels++;
+      }
+      nb_pixels++;
+  }
+
+  // If too many pixels are saturated, the value '255' is published so the lights_intensities node know it has to quickly reduce the light intensity
+  // If pixel_intensity_saturated_threshold_ < 0.0, it means we don't use this threshold
+  uint8_t pixel_intensity_measured;
+  float ratio_saturated_pixels = (float)nb_saturated_pixels / (float)nb_pixels;
+  if(saturated_threshold_ > 0.0 && ratio_saturated_pixels > saturated_threshold_)
+  {
+      pixel_intensity_measured = 255;
+  }
+  // Else, we calculate the mean intensity value
+  else
+  {
+      if(count_saturated_pixels_in_mean_)
+      {
+          pixel_intensity_measured = sum_values_to_calculate_mean / nb_pixels;
+      }
+      else
+      {
+          pixel_intensity_measured = sum_values_to_calculate_mean / nb_non_saturated_pixels;
+      }
+  }
+
+
+  // Moving Average
+  if(use_moving_average_)
+  {
+      // Manage vector of intensities
+      std::unique_lock lock{lock_};
+      if(values_for_moving_average_.size() < moving_average_k_)
+      {
+          values_for_moving_average_.emplace_back(pixel_intensity_measured);
+      }
+      else
+      {
+          values_for_moving_average_.erase(values_for_moving_average_.begin());
+          values_for_moving_average_.emplace_back(pixel_intensity_measured);
+      }
+
+      // Mean
+      int sum_pixel_intensities = 0;
+      for(int i = 0 ; i < values_for_moving_average_.size() ; i++)
+      {
+          sum_pixel_intensities += values_for_moving_average_[i];
+      }
+      current_intensity = (uint8_t)(sum_pixel_intensities / values_for_moving_average_.size());
+      lock.unlock();
+      
+  }
+  else
+  {
+      current_intensity= pixel_intensity_measured;
+  }
+
+  // Echos
+  auto end = std::chrono::high_resolution_clock::now();     
+  if(echo_)
+  {
+      std::chrono::duration<double> elapsed = end - start;
+      RCLCPP_INFO(
+      get_logger(),
+     " - Elapsed Time: %.6f s\n - nb_measured_pixels: %d\n - ratio_saturated_pixels: %.3f\n - pixel_intensity_measured: %u\n - pixel_intensity_msg.data: %u\n--------------------------------------",
+      elapsed.count(),
+      nb_pixels,
+      ratio_saturated_pixels,
+      pixel_intensity_measured,
+      current_intensity);
+  }
+  return current_intensity;
+}
 }  // namespace vimbax_camera

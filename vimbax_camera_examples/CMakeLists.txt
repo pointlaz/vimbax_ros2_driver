@@ -14,6 +14,7 @@ find_package(rclpy REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(vimbax_camera_msgs REQUIRED)
 find_package(vimbax_camera_events REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 add_executable(asynchronous_grab_cpp src/asynchronous_grab.cpp)
 ament_target_dependencies(
@@ -21,6 +22,7 @@ ament_target_dependencies(
         "rclcpp"
         "image_transport"
         "vimbax_camera_msgs"
+        "cv_bridge"
 )
 
 add_library(asynchronous_grab_performance SHARED src/asynchronous_grab_performance.cpp)
@@ -30,10 +32,12 @@ ament_target_dependencies(
         "rclcpp_components"
         "image_transport"
         "vimbax_camera_msgs"
+        "cv_bridge"
 )
 
 rclcpp_components_register_nodes(asynchronous_grab_performance
         "vimbax_camera_examples::AsynchronousGrabPerformance"
+        "cv_bridge"
 )
 
 
@@ -44,6 +48,7 @@ ament_target_dependencies(
         "image_transport"
         "vimbax_camera_msgs"
         "vimbax_camera_events"
+        "cv_bridge"
 )
 
 if(BUILD_TESTING)

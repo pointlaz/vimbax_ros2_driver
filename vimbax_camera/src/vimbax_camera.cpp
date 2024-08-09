@@ -1739,24 +1739,6 @@ void VimbaXCamera::Frame::on_frame_ready()
 
   transform();
   
-  //Pixel Intensity
-  
-
-  //Add Compression 
-
-  //Bayer -> RBG -> JPEG
-
-  //Bayer -> as is
-
-  //Bayer -> Jetraw
-
-  //Debug
-
-  // Jetraw -> Raw
-
-  // JPEG ->  Raw
-
-  // Bayer -> Raw
 
   if (callback_) {
     callback_(shared_from_this());
@@ -1814,6 +1796,148 @@ void VimbaXCamera::Frame::transform()
   {
     pixel_intensity_ = pixel_intensity_obj_->get_intensity(data.data(),data.size());
   }
+
+    //Pixel Intensity
+  
+
+  //Add Compression 
+  std::string compression_ = "JPEG";
+  int quality_ = 90;
+  bool debug_ = true;
+  bool echo_compress_ = true;
+
+  auto start = std::chrono::high_resolution_clock::now();
+  int dataSizeInit = data.size(); 
+  if (compression_ == "JPEG" || compression_ == "RGB")
+  {
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(shared_from_this(), encoding);
+    cv::Mat rgb_image;
+
+    // Convert the image based on its encoding
+    if (encoding == sensor_msgs::image_encodings::BAYER_RGGB8) {
+      cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerBG2RGB);
+    } 
+    else if (encoding == sensor_msgs::image_encodings::BAYER_GBRG8) {
+      cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerGB2RGB);
+    } 
+    else if (encoding == sensor_msgs::image_encodings::BAYER_GRBG8) {
+      cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerGR2RGB);
+    } 
+    else if (encoding == sensor_msgs::image_encodings::BAYER_BGGR8) {
+      cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerRG2RGB);
+    } 
+    else if (encoding == sensor_msgs::image_encodings::BGR8) {
+      cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BGR2RGB);
+    } 
+    else if (encoding == sensor_msgs::image_encodings::RGB8) {
+      rgb_image = cv_ptr->image; // No conversion needed
+    }
+    else {
+        RCLCPP_ERROR(get_logger(), "Unsupported encoding: %s", encoding.c_str());
+        return;
+    }
+
+    // Handle RGB conversion or JPEG compression
+    if (compression_ == "RGB")
+    {
+        cv_ptr->image = rgb_image;
+        cv_ptr->encoding = "rgb8";
+        sensor_msgs::msg::Image::SharedPtr image_msg = cv_ptr->toImageMsg();
+        this->header = image_msg->header;
+        this->height = image_msg->height;
+        this->width = image_msg->width;
+        this->encoding = image_msg->encoding;
+        this->is_bigendian = image_msg->is_bigendian;
+        this->step = image_msg->step;
+        this->data = image_msg->data;
+    }
+    else if (compression_ == "JPEG")
+    {
+        std::vector<uchar> buf;
+        std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, quality_};  
+        if (cv::imencode(".jpg", rgb_image, buf, params)) {
+            // Store the compressed data in the msg data field
+            this->data = buf;
+            this->encoding = "jpeg";
+            this->step = buf.size();
+        } else {
+            RCLCPP_ERROR(get_logger(), "Failed to compress image to JPEG");
+        }
+    }
+  }
+  auto end = std::chrono::high_resolution_clock::now();     
+  if(echo_compress_)
+  {
+      std::chrono::duration<double> elapsed = end - start;
+      float compress_ratio = (float)dataSizeInit/(float)data.size();
+      RCLCPP_INFO(
+      get_logger(),
+     "-Compress Elapsed Time: %.6f s\n - compress_ratio: %.3f\n --------------------------------------",
+      elapsed.count(),
+      compress_ratio);
+  }
+
+  if (debug_)
+  {
+      cv_bridge::CvImagePtr cv_ptr;
+      cv::Mat rgb_image;
+
+      // Convert the image based on its encoding
+      if (encoding == sensor_msgs::image_encodings::BAYER_RGGB8) {
+        cv_ptr  = cv_bridge::toCvCopy(shared_from_this(), encoding);
+        cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerBG2RGB);
+      } 
+      else if (encoding == sensor_msgs::image_encodings::BAYER_GBRG8) {
+        cv_ptr  = cv_bridge::toCvCopy(shared_from_this(), encoding);
+        cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerGB2RGB);
+      } 
+      else if (encoding == sensor_msgs::image_encodings::BAYER_GRBG8) {
+        cv_ptr  = cv_bridge::toCvCopy(shared_from_this(), encoding);
+        cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerGR2RGB);
+      } 
+      else if (encoding == sensor_msgs::image_encodings::BAYER_BGGR8) {
+        cv_ptr  = cv_bridge::toCvCopy(shared_from_this(), encoding);
+        cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BayerRG2RGB);
+      } 
+      else if (encoding == sensor_msgs::image_encodings::BGR8) {
+        cv_ptr  = cv_bridge::toCvCopy(shared_from_this(), encoding);
+        cv::cvtColor(cv_ptr->image, rgb_image, cv::COLOR_BGR2RGB);
+      } 
+      else if (encoding == "jpeg") {
+          cv::Mat compressed_data(1, this->data.size(), CV_8UC1, (void*)this->data.data());
+          rgb_image = cv::imdecode(compressed_data, cv::IMREAD_COLOR);
+          if (rgb_image.empty()) {
+              RCLCPP_ERROR(get_logger(), "Failed to decode JPEG image");
+              return;
+          }
+          // Ensure the image is in RGB format
+          if (rgb_image.type() == CV_8UC3) {
+              cv::cvtColor(rgb_image, rgb_image, cv::COLOR_BGR2RGB);
+          }
+          cv_ptr = cv_bridge::CvImagePtr(new cv_bridge::CvImage(header, "rgb8", rgb_image));
+      } 
+      else if (encoding == sensor_msgs::image_encodings::RGB8) {
+          cv_ptr = cv_bridge::toCvCopy(shared_from_this(), encoding);
+          rgb_image = cv_ptr->image; // No conversion needed
+      }
+      else {
+          RCLCPP_ERROR(get_logger(), "Unsupported encoding: %s", encoding.c_str());
+          return;
+      }
+
+      // If we reached this point, cv_ptr should be correctly initialized
+      cv_ptr->image = rgb_image;
+      cv_ptr->encoding = "rgb8";
+      sensor_msgs::msg::Image::SharedPtr image_msg = cv_ptr->toImageMsg();
+      this->header = image_msg->header;
+      this->height = image_msg->height;
+      this->width = image_msg->width;
+      this->encoding = image_msg->encoding;
+      this->is_bigendian = image_msg->is_bigendian;
+      this->step = image_msg->step;
+      this->data = image_msg->data;
+  }
+
 }
 
 VimbaXCamera::Frame::Frame(std::shared_ptr<VimbaXCamera> camera, AllocationMode allocation_mode)

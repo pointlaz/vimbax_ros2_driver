@@ -42,6 +42,8 @@
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/u_int8.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
 
 #include <vimbax_camera/result.hpp>
 #include <vimbax_camera/loader/vmbc_api.hpp>

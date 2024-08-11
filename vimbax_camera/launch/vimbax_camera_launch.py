@@ -55,20 +55,26 @@ def generate_launch_description():
         'camera_ids.yaml'
     )
 
-    camera_ids_config = yaml.safe_load(open(camera_ids_config_path, "r"))
-    camera_ids_config["id_0"]
+    with open(camera_ids_config_path, 'r') as file:
+        cameras = yaml.safe_load(file)
+    
+    # Extract the list of cameras
+    cameras_id = cameras['cameras_id']
+    id_count = 0
 
-    vimbax_camera_node = Node(
-            package='vimbax_camera',
-            namespace='',
-            executable='vimbax_camera_node',
-            name='vimbax_camera_node_1',
-            parameters=[
-               config_path,
-               {"camera_id": 1},
-            ]
-    )
+    for camera_id in cameras_id:
 
-    vimbax_camera_ld.add_action(vimbax_camera_node)
+        camera_node_name = f'camera_{id_count}'
+        vimbax_camera_node = Node(
+                package='vimbax_camera',
+                namespace='',
+                executable='vimbax_camera_node',
+                name= camera_node_name,
+                parameters=[
+                config_path,
+                {'camera_id' : camera_id},
+                ])
+        id_count += 1
+        vimbax_camera_ld.add_action(vimbax_camera_node)
 
     return vimbax_camera_ld

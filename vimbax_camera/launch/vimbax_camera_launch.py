@@ -52,7 +52,7 @@ def generate_launch_description():
     camera_ids_config_path = os.path.join(
         share_directory_path,
         'config',
-        'camera_ids.yaml'
+        'cameras_id.yaml'
     )
 
     with open(camera_ids_config_path, 'r') as file:

@@ -346,7 +346,7 @@ bool VimbaXCameraNode::initialize_parameters()
 
   auto const parameter_compression_jpeg_quality_desc = rcl_interfaces::msg::ParameterDescriptor{}
   .set__description("Compression Information");
-  node_->declare_parameter(parameter_compression_jpeg_quality, false, parameter_compression_jpeg_quality_desc);
+  node_->declare_parameter(parameter_compression_jpeg_quality, 90, parameter_compression_jpeg_quality_desc);
 
 
   parameter_callback_handle_ = node_->add_on_set_parameters_callback(

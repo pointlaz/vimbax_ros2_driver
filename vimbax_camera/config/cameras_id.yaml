@@ -1,5 +1,4 @@
-cameras : 
-[
+cameras_id: [
   "DEV_XXXXXXXXX",
   "DEV_XXXXXXXXX"
 ]

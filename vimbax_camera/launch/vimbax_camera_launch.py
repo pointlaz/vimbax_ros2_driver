@@ -59,12 +59,9 @@ def generate_launch_description():
         cameras = yaml.safe_load(file)
     
     # Extract the list of cameras
-    cameras_id = cameras['cameras_id']
-    id_count = 0
+    for index, camera_id in enumerate(cameras['cameras_id']):
 
-    for camera_id in cameras_id:
-
-        camera_node_name = f'camera_{id_count}'
+        camera_node_name = f'camera_{index}'
         vimbax_camera_node = Node(
                 package='vimbax_camera',
                 namespace='',
@@ -74,7 +71,6 @@ def generate_launch_description():
                 config_path,
                 {'camera_id' : camera_id},
                 ])
-        id_count += 1
         vimbax_camera_ld.add_action(vimbax_camera_node)
 
     return vimbax_camera_ld

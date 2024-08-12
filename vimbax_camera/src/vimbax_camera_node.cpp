@@ -403,7 +403,7 @@ bool VimbaXCameraNode::initialize_publisher()
 
   camera_->compression_debug_ = node_->get_parameter(parameter_compression_debug).as_bool();
 
-  camera_->compression_echo_ = node_->get_parameter(parameter_compression_debug).as_bool();
+  camera_->compression_echo_ = node_->get_parameter(parameter_compression_echo).as_bool();
 
   camera_->compression_jpeg_quality_ = node_->get_parameter(parameter_compression_jpeg_quality).as_int();
   
